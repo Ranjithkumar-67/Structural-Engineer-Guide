@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Engineering Unit Converter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #E8ECF0 0%, #F5F7FA 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1500px; margin: 0 auto; }
+        header {
+            background: linear-gradient(135deg, #4A6FA5 0%, #5B7FB5 100%);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(74,111,165,0.2);
+        }
+        header h1 { font-size: 2.5rem; margin-bottom: 12px; font-weight: 600; }
+        header p { font-size: 1.1rem; opacity: 0.95; }
+        
+        .tabs { flex-wrap: wrap;
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .tab {
+            flex: 1;
+            padding: 16px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #6B7280;
+            transition: all 0.3s ease;
+        }
+        .tab:hover { background: #F3F4F6; color: #4A6FA5; }
+        .tab.active {
+            background: linear-gradient(135deg, #4A6FA5 0%, #5B7FB5 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(74,111,165,0.25);
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 2px solid #E5E7EB;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .category-card:hover {
+            border-color: #4A6FA5;
+            box-shadow: 0 8px 24px rgba(74,111,165,0.15);
+            transform: translateY(-4px);
+        }
+        .category-card.expanded {
+            border-color: #4A6FA5;
+        }
+        
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1F2937;
+        }
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4A6FA5 0%, #5B7FB5 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .expand-icon {
+            color: #4A6FA5;
+            font-size: 1.3rem;
+            transition: transform 0.3s ease;
+        }
+        .category-card.expanded .expand-icon { transform: rotate(180deg); }
+        
+        .converter-content {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #F3F4F6;
+        }
+        .category-card.expanded .converter-content { display: block; }
+        
+        .conversion-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6B7280;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4A6FA5;
+            box-shadow: 0 0 0 4px rgba(74,111,165,0.1);
+        }
+        input[readonly] {
+            background: #F9FAFB;
+            color: #4A6FA5;
+            font-weight: 600;
+        }
+        select { margin-top: 10px; cursor: pointer; }
+        
+        .result-box {
+            background: linear-gradient(135deg, #4A6FA5 0%, #5B7FB5 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        .result-box.show { display: block; animation: slideIn 0.3s ease; }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 1200px) {
+            .categories-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .categories-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ Structural Engineering Unit Converter</h1>
+            <p>Comprehensive conversion tool for Imperial & Metric units with formulas and memory tips</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('converter')">🔄 Converter</button>
+            <button class="tab" onclick="switchTab('formulas')">📐 Formulas</button>
+            <button class="tab" onclick="switchTab('connections')">🔩 Connections</button>
+            <button class="tab" onclick="switchTab('structural')">🏗️ Structural</button>
+            <button class="tab" onclick="switchTab('wind')">🌬️ Wind</button>
+            <button class="tab" onclick="switchTab('seismic')">📊 Seismic</button>
+            <button class="tab" onclick="switchTab('steelsec')">🏗️ Sections</button>
+            <button class="tab" onclick="switchTab('serviceability')">🔄 Deflection</button>
+            <button class="tab" onclick="switchTab('conndetail')">🔗 Conn Details</button>
+            <button class="tab" onclick="switchTab('baseplate')">🏢 Base Plate</button>
+            <button class="tab" onclick="switchTab('calculators')">🔢 Calculators</button>
+            <button class="tab" onclick="switchTab('tips')">💡 Tips</button>
+        </div>
+
+        <div id="converter" class="tab-content active">
+            <div class="categories-grid">
+                <!-- LENGTH -->
+                <div class="category-card" id="length-card">
+                    <div class="category-header" onclick="toggleCard('length')">
+                        <div class="category-title">
+                            <div class="category-icon">L</div>
+                            Length
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="length-in" oninput="convert('length')" placeholder="Enter value" step="any">
+                                <select id="length-from" onchange="convert('length')">
+                                    <option value="m">Meters (m)</option>
+                                    <option value="ft">Feet (ft)</option>
+                                    <option value="in">Inches (in)</option>
+                                    <option value="cm">Centimeters (cm)</option>
+                                    <option value="mm">Millimeters (mm)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="length-out" readonly placeholder="Result">
+                                <select id="length-to" onchange="convert('length')">
+                                    <option value="ft">Feet (ft)</option>
+                                    <option value="m">Meters (m)</option>
+                                    <option value="in">Inches (in)</option>
+                                    <option value="cm">Centimeters (cm)</option>
+                                    <option value="mm">Millimeters (mm)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="length-result"></div>
+                    </div>
+                </div>
+
+                <!-- AREA -->
+                <div class="category-card" id="area-card">
+                    <div class="category-header" onclick="toggleCard('area')">
+                        <div class="category-title">
+                            <div class="category-icon">A</div>
+                            Area
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="area-in" oninput="convert('area')" placeholder="Enter value" step="any">
+                                <select id="area-from" onchange="convert('area')">
+                                    <option value="m2">Square Meters (m²)</option>
+                                    <option value="ft2">Square Feet (ft²)</option>
+                                    <option value="in2">Square Inches (in²)</option>
+                                    <option value="cm2">Square Centimeters (cm²)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="area-out" readonly placeholder="Result">
+                                <select id="area-to" onchange="convert('area')">
+                                    <option value="ft2">Square Feet (ft²)</option>
+                                    <option value="m2">Square Meters (m²)</option>
+                                    <option value="in2">Square Inches (in²)</option>
+                                    <option value="cm2">Square Centimeters (cm²)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="area-result"></div>
+                    </div>
+                </div>
+
+                <!-- VOLUME -->
+                <div class="category-card" id="volume-card">
+                    <div class="category-header" onclick="toggleCard('volume')">
+                        <div class="category-title">
+                            <div class="category-icon">V</div>
+                            Volume
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="volume-in" oninput="convert('volume')" placeholder="Enter value" step="any">
+                                <select id="volume-from" onchange="convert('volume')">
+                                    <option value="m3">Cubic Meters (m³)</option>
+                                    <option value="ft3">Cubic Feet (ft³)</option>
+                                    <option value="in3">Cubic Inches (in³)</option>
+                                    <option value="cm3">Cubic Centimeters (cm³)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="volume-out" readonly placeholder="Result">
+                                <select id="volume-to" onchange="convert('volume')">
+                                    <option value="ft3">Cubic Feet (ft³)</option>
+                                    <option value="m3">Cubic Meters (m³)</option>
+                                    <option value="in3">Cubic Inches (in³)</option>
+                                    <option value="cm3">Cubic Centimeters (cm³)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="volume-result"></div>
+                    </div>
+                </div>
+
+                <!-- FORCE -->
+                <div class="category-card" id="force-card">
+                    <div class="category-header" onclick="toggleCard('force')">
+                        <div class="category-title">
+                            <div class="category-icon">F</div>
+                            Force
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="force-in" oninput="convert('force')" placeholder="Enter value" step="any">
+                                <select id="force-from" onchange="convert('force')">
+                                    <option value="kN">Kilonewtons (kN)</option>
+                                    <option value="N">Newtons (N)</option>
+                                    <option value="kip">Kips (kip)</option>
+                                    <option value="lbf">Pounds (lbf)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="force-out" readonly placeholder="Result">
+                                <select id="force-to" onchange="convert('force')">
+                                    <option value="kip">Kips (kip)</option>
+                                    <option value="kN">Kilonewtons (kN)</option>
+                                    <option value="N">Newtons (N)</option>
+                                    <option value="lbf">Pounds (lbf)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="force-result"></div>
+                    </div>
+                </div>
+
+                <!-- STRESS/PRESSURE -->
+                <div class="category-card" id="stress-card">
+                    <div class="category-header" onclick="toggleCard('stress')">
+                        <div class="category-title">
+                            <div class="category-icon">σ</div>
+                            Stress/Pressure
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="stress-in" oninput="convert('stress')" placeholder="Enter value" step="any">
+                                <select id="stress-from" onchange="convert('stress')">
+                                    <option value="MPa">Megapascals (MPa)</option>
+                                    <option value="kPa">Kilopascals (kPa)</option>
+                                    <option value="psi">PSI (lbf/in²)</option>
+                                    <option value="ksi">KSI (kip/in²)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="stress-out" readonly placeholder="Result">
+                                <select id="stress-to" onchange="convert('stress')">
+                                    <option value="psi">PSI (lbf/in²)</option>
+                                    <option value="MPa">Megapascals (MPa)</option>
+                                    <option value="kPa">Kilopascals (kPa)</option>
+                                    <option value="ksi">KSI (kip/in²)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="stress-result"></div>
+                    </div>
+                </div>
+
+                <!-- MOMENT -->
+                <div class="category-card" id="moment-card">
+                    <div class="category-header" onclick="toggleCard('moment')">
+                        <div class="category-title">
+                            <div class="category-icon">M</div>
+                            Moment/Torque
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="moment-in" oninput="convert('moment')" placeholder="Enter value" step="any">
+                                <select id="moment-from" onchange="convert('moment')">
+                                    <option value="kNm">Kilonewton-meters (kN·m)</option>
+                                    <option value="Nm">Newton-meters (N·m)</option>
+                                    <option value="kipft">Kip-feet (kip·ft)</option>
+                                    <option value="lbfft">Pound-feet (lbf·ft)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="moment-out" readonly placeholder="Result">
+                                <select id="moment-to" onchange="convert('moment')">
+                                    <option value="kipft">Kip-feet (kip·ft)</option>
+                                    <option value="kNm">Kilonewton-meters (kN·m)</option>
+                                    <option value="Nm">Newton-meters (N·m)</option>
+                                    <option value="lbfft">Pound-feet (lbf·ft)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="moment-result"></div>
+                    </div>
+                </div>
+
+                <!-- MASS -->
+                <div class="category-card" id="mass-card">
+                    <div class="category-header" onclick="toggleCard('mass')">
+                        <div class="category-title">
+                            <div class="category-icon">m</div>
+                            Mass
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="mass-in" oninput="convert('mass')" placeholder="Enter value" step="any">
+                                <select id="mass-from" onchange="convert('mass')">
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="g">Grams (g)</option>
+                                    <option value="tonne">Tonnes (t)</option>
+                                    <option value="lb">Pounds (lb)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="mass-out" readonly placeholder="Result">
+                                <select id="mass-to" onchange="convert('mass')">
+                                    <option value="lb">Pounds (lb)</option>
+                                    <option value="kg">Kilograms (kg)</option>
+                                    <option value="g">Grams (g)</option>
+                                    <option value="tonne">Tonnes (t)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="mass-result"></div>
+                    </div>
+                </div>
+
+                <!-- DENSITY -->
+                <div class="category-card" id="density-card">
+                    <div class="category-header" onclick="toggleCard('density')">
+                        <div class="category-title">
+                            <div class="category-icon">ρ</div>
+                            Density
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="converter-content">
+                        <div class="conversion-row">
+                            <div>
+                                <label>From</label>
+                                <input type="number" id="density-in" oninput="convert('density')" placeholder="Enter value" step="any">
+                                <select id="density-from" onchange="convert('density')">
+                                    <option value="kgm3">kg/m³</option>
+                                    <option value="gcm3">g/cm³</option>
+                                    <option value="lbft3">lb/ft³ (PCF)</option>
+                                    <option value="lbin3">lb/in³</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To</label>
+                                <input type="text" id="density-out" readonly placeholder="Result">
+                                <select id="density-to" onchange="convert('density')">
+                                    <option value="lbft3">lb/ft³ (PCF)</option>
+                                    <option value="kgm3">kg/m³</option>
+                                    <option value="gcm3">g/cm³</option>
+                                    <option value="lbin3">lb/in³</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="result-box" id="density-result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="formulas" class="tab-content">
+            <h2 style="color: #1F2937; margin-bottom: 20px; font-size: 2rem;">📐 Engineering Formulas Reference</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                
+                <!-- Concrete -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border-left: 4px solid #4A6FA5;">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🏗️ Concrete Design</h3>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Compressive Strength:</strong><br>f'c = P / A
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Flexural Strength:</strong><br>Mn = As × fy × (d - a/2)
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Shear Strength:</strong><br>Vc = 2√f'c × bw × d
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Modulus:</strong><br>Ec = 4700√f'c (MPa)
+                    </div>
+                </div>
+
+                <!-- Steel -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border-left: 4px solid #4A6FA5;">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🔩 Steel Design</h3>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Axial Capacity:</strong><br>Pn = Fy × Ag
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Bending Capacity:</strong><br>Mn = Fy × Zx
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Slenderness:</strong><br>λ = KL / r
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Buckling:</strong><br>Fcr = π²E / λ²
+                    </div>
+                </div>
+
+                <!-- Beams -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border-left: 4px solid #4A6FA5;">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">📏 Beam Formulas</h3>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Simply Supported (Point Load):</strong><br>Mmax = PL/4<br>Vmax = P/2
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Simply Supported (UDL):</strong><br>Mmax = wL²/8<br>Vmax = wL/2
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Cantilever:</strong><br>Mmax = PL (end load)<br>Mmax = wL²/2 (UDL)
+                    </div>
+                </div>
+
+                <!-- Soil Mechanics -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border-left: 4px solid #4A6FA5;">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🌍 Soil Mechanics</h3>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Bearing Capacity:</strong><br>qu = cNc + γDfNq + 0.5γBNγ
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Settlement:</strong><br>S = (q × B × (1-μ²)) / Es
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Active Earth Pressure:</strong><br>Ka = (1-sinφ)/(1+sinφ)
+                    </div>
+                </div>
+
+                <!-- Hydraulics -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border-left: 4px solid #4A6FA5;">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">💧 Hydraulics</h3>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Flow Rate:</strong><br>Q = A × V
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Manning's Equation:</strong><br>V = (1/n) × R^(2/3) × S^(1/2)
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>Head Loss:</strong><br>hf = f(L/D)(V²/2g)
+                    </div>
+                </div>
+
+                <!-- Load Combinations -->
+                <div style="background: white; padding: 24px; border-radius: 12px; border-left: 4px solid #4A6FA5;">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">⚖️ Load Combinations</h3>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>ACI:</strong><br>1.4D<br>1.2D + 1.6L<br>1.2D + 1.0L + 1.0E
+                    </div>
+                    <div style="background: #F9FAFB; padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 0.9rem;">
+                        <strong>AISC LRFD:</strong><br>1.2D + 1.6L<br>1.2D + 0.5L + 1.0E
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tips" class="tab-content">
+            <h2 style="color: #1F2937; margin-bottom: 20px; font-size: 2rem;">💡 Memory Tips & Shortcuts</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px;">
+                
+                <!-- Length -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">📏 Length Tricks</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>1 inch = 25.4mm</strong> - Think "quarter century"</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>1m ≈ 1yd + 10%</strong> - 1m = 3.28ft ≈ 1.09yd</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Foot = 0.3</strong> - 1ft = 0.3048m (remember 0.3)</li>
+                        <li style="padding: 8px 0;"><strong>12 inches = 1 foot</strong> - Always!</li>
+                    </ul>
+                </div>
+
+                <!-- Force -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">⚡ Force Shortcuts</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>kip = kilo-pound</strong> - 1 kip = 1000 lbf</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>1kN ≈ 225lbf</strong> - Quarter kip</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>4.45N per pound</strong> - 1lbf = 4.448N</li>
+                        <li style="padding: 8px 0;"><strong>Gravity: 9.81 m/s²</strong> or 32.2 ft/s²</li>
+                    </ul>
+                </div>
+
+                <!-- Stress -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">💪 Stress Memory</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>1MPa ≈ 145psi</strong> - Close to 150</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Concrete 4ksi = 28MPa</strong> - Common strength</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Steel 36ksi = 250MPa</strong> - Grade 36</li>
+                        <li style="padding: 8px 0;"><strong>PSI to kPa: ×7</strong> - Actually 6.895</li>
+                    </ul>
+                </div>
+
+                <!-- Area/Volume -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">📐 Area & Volume</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Square it!</strong> - Area = length² conversion</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Cube it!</strong> - Volume = length³ conversion</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>1m² ≈ 11ft²</strong> - Actually 10.76</li>
+                        <li style="padding: 8px 0;"><strong>27 ft³ = 1 yd³</strong> - 3×3×3</li>
+                    </ul>
+                </div>
+
+                <!-- Material Properties -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🏗️ Material Anchors</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Concrete: 150 PCF</strong> = 2400 kg/m³</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Steel: 490 PCF</strong> = 7850 kg/m³</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Water: 62.4 PCF</strong> = 1000 kg/m³</li>
+                        <li style="padding: 8px 0;"><strong>Aluminum: 165 PCF</strong> = 2700 kg/m³</li>
+                    </ul>
+                </div>
+
+                <!-- Moment Tips -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🔄 Moment Tricks</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>12 inches rule</strong> - 1ft·lb = 12in·lb</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>1kN·m ≈ 0.74 kip·ft</strong> - About 3/4</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Multiply conversions</strong> - Force × Length</li>
+                        <li style="padding: 8px 0;"><strong>Right-hand rule</strong> - Thumb = axis</li>
+                    </ul>
+                </div>
+
+                <!-- Quick Mental Math -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🧮 Mental Math</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Round to 5 or 10</strong> - For estimates</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Use ratios</strong> - Know 1, multiply others</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Check magnitude</strong> - MPa ~1/7 of ksi</li>
+                        <li style="padding: 8px 0;"><strong>Work backwards</strong> - Verify by reverse</li>
+                    </ul>
+                </div>
+
+                <!-- Common Pitfalls -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">⚠️ Avoid These!</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>PSI vs PSF</strong> - 144× difference!</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>kip vs kN</strong> - Different by 4.45</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Mass vs Force</strong> - kg vs kgf</li>
+                        <li style="padding: 8px 0;"><strong>Ton vs Tonne</strong> - 2000lb vs 1000kg</li>
+                    </ul>
+                </div>
+
+                <!-- Industrial Standards -->
+                <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <h3 style="color: #4A6FA5; margin-bottom: 16px;">🏭 Industrial Quick Ref</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Pipe: NPS vs DN</strong> - Nominal sizes</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Rebar: #4 = 1/2"</strong> - Bar number/8</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;"><strong>Bolt: M12 = 1/2"</strong> - Metric/Imperial</li>
+                        <li style="padding: 8px 0;"><strong>HP = 0.746 kW</strong> - Power conversion</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const factors = {
+            length: { m: 1, ft: 0.3048, in: 0.0254, cm: 0.01, mm: 0.001 },
+            area: { m2: 1, ft2: 0.09290304, in2: 0.00064516, cm2: 0.0001 },
+            volume: { m3: 1, ft3: 0.028316847, in3: 0.000016387064, cm3: 0.000001 },
+            force: { N: 1, kN: 1000, lbf: 4.4482216, kip: 4448.2216 },
+            stress: { Pa: 1, kPa: 1000, MPa: 1000000, psi: 6894.7573, ksi: 6894757.3 },
+            moment: { Nm: 1, kNm: 1000, lbfft: 1.3558179, kipft: 1355.8179 },
+            mass: { kg: 1, g: 0.001, tonne: 1000, lb: 0.45359237 },
+            density: { kgm3: 1, gcm3: 1000, lbft3: 16.018463, lbin3: 27679.905 }
+        };
+
+        function toggleCard(id) {
+            document.getElementById(id + '-card').classList.toggle('expanded');
+        }
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(name).classList.add('active');
+        }
+
+        function convert(type) {
+            const input = parseFloat(document.getElementById(type + '-in').value);
+            const from = document.getElementById(type + '-from').value;
+            const to = document.getElementById(type + '-to').value;
+            const output = document.getElementById(type + '-out');
+            const result = document.getElementById(type + '-result');
+
+            if (!input || isNaN(input)) {
+                output.value = '';
+                result.classList.remove('show');
+                return;
+            }
+
+            const base = input * factors[type][from];
+            const converted = base / factors[type][to];
+            
+            output.value = converted.toFixed(6);
+            result.textContent = `${input} ${from} = ${converted.toFixed(6)} ${to}`;
+            result.classList.add('show');
+        }
+    </script>
+
+        <!-- ===== CONNECTIONS TAB ===== -->
+        <div id="connections" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🔩 Connections – Bolts, Welds, Plates, Anchors</h2>
+
+        <!-- SECTION STYLE -->
+        <style>
+          .sec{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #4A6FA5;}
+          .sec h3{color:#2C4A6B;margin-bottom:16px;font-size:1.3rem;}
+          .sec h4{color:#4A6FA5;margin:14px 0 8px;font-size:1rem;}
+          table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.88rem;}
+          th{background:#4A6FA5;color:white;padding:9px 12px;text-align:left;}
+          td{padding:8px 12px;border-bottom:1px solid #E5E7EB;}
+          tr:nth-child(even) td{background:#F9FAFB;}
+          .formula{background:#F0F4FF;border-left:3px solid #4A6FA5;padding:10px 14px;font-family:monospace;font-size:0.9rem;margin:8px 0;border-radius:0 6px 6px 0;}
+          .warn{background:#FFF8E1;border-left:3px solid #F59E0B;padding:10px 14px;font-size:0.88rem;margin:8px 0;border-radius:0 6px 6px 0;}
+          .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+          .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+          @media(max-width:768px){.grid2,.grid3{grid-template-columns:1fr;}}
+          .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:700;margin-right:6px;}
+          .ind{background:#E8F4FD;color:#1A6BA0;}
+          .usa{background:#FDE8E8;color:#A01A1A;}
+          .both{background:#E8FDF0;color:#1A8040;}
+        </style>
+
+        <!-- BOLTS -->
+        <div class="sec">
+          <h3>⚙️ BOLT DESIGN — Complete Reference</h3>
+          <div class="grid2">
+            <div>
+              <h4>Bolt Grades & Material Properties</h4>
+              <table>
+                <tr><th>Grade</th><th>Standard</th><th>Fy (MPa)</th><th>Fu (MPa)</th><th>Use</th></tr>
+                <tr><td>4.6</td><td>IS 1367</td><td>240</td><td>400</td><td>Non-structural</td></tr>
+                <tr><td>8.8</td><td>IS 1367</td><td>640</td><td>800</td><td>Structural HSFG</td></tr>
+                <tr><td>10.9</td><td>IS 1367</td><td>900</td><td>1000</td><td>High strength</td></tr>
+                <tr><td>A307</td><td>ASTM</td><td>248</td><td>414</td><td>Non-structural</td></tr>
+                <tr><td>A325</td><td>ASTM</td><td>635</td><td>825</td><td>Structural</td></tr>
+                <tr><td>A490</td><td>ASTM</td><td>895</td><td>1035</td><td>High strength</td></tr>
+              </table>
+              <h4>Bolt Types</h4>
+              <table>
+                <tr><th>Type</th><th>Description</th></tr>
+                <tr><td>Bearing Type</td><td>Force transferred by bearing on bolt shank</td></tr>
+                <tr><td>HSFG / Slip-Critical</td><td>Force by friction – no slip allowed</td></tr>
+                <tr><td>Tension Bolt</td><td>Axial tension along bolt axis</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Bolt Spacing — IS 800:2007</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>Pitch (along force)</td><td>2.5d</td><td>Min(32t, 300mm)</td></tr>
+                <tr><td>Gauge (perpendicular)</td><td>3.0d</td><td>Min(32t, 300mm)</td></tr>
+                <tr><td>Edge (along force)</td><td>1.7d</td><td>Min(12t, 150mm)</td></tr>
+                <tr><td>Edge (perpendicular)</td><td>1.5d</td><td>Min(12t, 150mm)</td></tr>
+              </table>
+              <div class="warn">⚠️ d = bolt diameter, t = thinner plate thickness</div>
+              <h4>Bolt Spacing — AISC/LRFD</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>Pitch</td><td>2.67d</td><td>Min(24t, 12")</td></tr>
+                <tr><td>Edge (sheared)</td><td>1.5d</td><td>Min(12t, 6")</td></tr>
+                <tr><td>Edge (rolled)</td><td>1.25d</td><td>Min(12t, 6")</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <h4>Bolt Design Formulas — IS 800:2007</h4>
+          <div class="formula">Shear Capacity: Vdsb = Vnsb / γmb<br>
+Vnsb = fu × Anb / (√3) [Single shear]<br>
+Vnsb = fu × 2Anb / (√3) [Double shear]<br>
+γmb = 1.25</div>
+          <div class="formula">Bearing Capacity: Vdpb = Vnpb / γmb<br>
+Vnpb = 2.5kb × d × t × fu<br>
+kb = min(e/3do, p/3do – 0.25, fub/fu, 1.0)</div>
+          <div class="formula">Tension Capacity: Tdb = min(Tdg, Tdn)<br>
+Tdg = Ag × fy / γm0 [Gross yielding]<br>
+Tdn = 0.9 × An × fu / γm1 [Net fracture]</div>
+          <div class="formula">Combined Shear + Tension: (Vsb/Vdb)² + (Tb/Tdb)² ≤ 1.0</div>
+
+          <h4>Bolt Design Formulas — AISC LRFD</h4>
+          <div class="formula">Shear: φRn = φ × Fnv × Ab<br>
+Fnv = 54 ksi (A325), 68 ksi (A490)<br>
+φ = 0.75</div>
+          <div class="formula">Bearing: φRn = φ × 2.4Fu × d × t<br>
+φ = 0.75</div>
+          <div class="formula">Tension: φRn = φ × 0.75Fu × Ab, φ = 0.75</div>
+        </div>
+
+        <!-- WELDS -->
+        <div class="sec">
+          <h3>🔥 WELD DESIGN — Complete Reference</h3>
+          <div class="grid2">
+            <div>
+              <h4>Weld Types</h4>
+              <table>
+                <tr><th>Type</th><th>Use Case</th></tr>
+                <tr><td>Fillet Weld</td><td>Lap, T, Corner joints — Most common</td></tr>
+                <tr><td>Groove/Butt Weld</td><td>Full penetration — Tension members</td></tr>
+                <tr><td>Plug/Slot Weld</td><td>Lap joints where fillet not possible</td></tr>
+              </table>
+              <h4>Weld Grades & Electrode</h4>
+              <table>
+                <tr><th>Electrode</th><th>Standard</th><th>Fy</th><th>Fu</th></tr>
+                <tr><td>E41 / E4116</td><td>IS 814</td><td>330MPa</td><td>410MPa</td></tr>
+                <tr><td>E51</td><td>IS 814</td><td>400MPa</td><td>510MPa</td></tr>
+                <tr><td>E70xx</td><td>AWS A5.1</td><td>–</td><td>485MPa (70ksi)</td></tr>
+                <tr><td>E80xx</td><td>AWS A5.1</td><td>–</td><td>550MPa (80ksi)</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Fillet Weld Size Limits — IS 800</h4>
+              <table>
+                <tr><th>Parameter</th><th>Limit</th></tr>
+                <tr><td>Min size (t≤10mm)</td><td>3mm</td></tr>
+                <tr><td>Min size (10<t≤20mm)</td><td>5mm</td></tr>
+                <tr><td>Min size (t>20mm)</td><td>6mm</td></tr>
+                <tr><td>Max size (plate edge)</td><td>t – 1.5mm</td></tr>
+                <tr><td>Max size (corner)</td><td>0.7t</td></tr>
+                <tr><td>Min length</td><td>4 × weld size or 40mm</td></tr>
+                <tr><td>Max length (stress)</td><td>150 × weld size</td></tr>
+              </table>
+              <h4>Fillet Weld Size — AISC</h4>
+              <table>
+                <tr><th>Plate t (in)</th><th>Min Size (in)</th></tr>
+                <tr><td>t ≤ 1/4</td><td>1/8</td></tr>
+                <tr><td>1/4 < t ≤ 1/2</td><td>3/16</td></tr>
+                <tr><td>1/2 < t ≤ 3/4</td><td>1/4</td></tr>
+                <tr><td>t > 3/4</td><td>5/16</td></tr>
+              </table>
+            </div>
+          </div>
+          <h4>Weld Capacity Formulas</h4>
+          <div class="formula"><span class="badge ind">IS 800</span> Fillet Weld Shear Capacity:<br>
+Vnsw = fu / (√3 × γmw) × Lw × tt<br>
+tt = throat thickness = 0.7 × weld size<br>
+γmw = 1.25 (shop), 1.50 (field)</div>
+          <div class="formula"><span class="badge usa">AISC</span> Fillet Weld Capacity:<br>
+φRn = φ × 0.6FEXX × Aw<br>
+Aw = 0.707 × weld size × length<br>
+φ = 0.75, FEXX = electrode strength</div>
+        </div>
+
+        <!-- PLATES -->
+        <div class="sec">
+          <h3>🔲 PLATE DESIGN</h3>
+          <div class="grid2">
+            <div>
+              <h4>Plate Grades — IS 2062</h4>
+              <table>
+                <tr><th>Grade</th><th>Fy (MPa)</th><th>Fu (MPa)</th><th>Use</th></tr>
+                <tr><td>E250 (A)</td><td>250</td><td>410</td><td>General structural</td></tr>
+                <tr><td>E300</td><td>300</td><td>440</td><td>Structural</td></tr>
+                <tr><td>E350</td><td>350</td><td>490</td><td>High strength</td></tr>
+                <tr><td>E410</td><td>410</td><td>540</td><td>High strength</td></tr>
+              </table>
+              <h4>Plate Grades — ASTM</h4>
+              <table>
+                <tr><th>Grade</th><th>Fy (ksi)</th><th>Fu (ksi)</th></tr>
+                <tr><td>A36</td><td>36</td><td>58</td></tr>
+                <tr><td>A572 Gr50</td><td>50</td><td>65</td></tr>
+                <tr><td>A588</td><td>50</td><td>70</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Plate Thickness Limits</h4>
+              <table>
+                <tr><th>Element</th><th>Min (mm)</th><th>Notes</th></tr>
+                <tr><td>Gusset plate</td><td>8</td><td>Typically 10-20mm</td></tr>
+                <tr><td>End plate</td><td>10</td><td>12-25mm common</td></tr>
+                <tr><td>Base plate</td><td>16</td><td>Check bending</td></tr>
+                <tr><td>Shear tab</td><td>8</td><td>Min 3/8" AISC</td></tr>
+                <tr><td>Splice plate</td><td>8</td><td>Match member</td></tr>
+              </table>
+              <div class="formula">Base Plate Area: A1 = P / (0.85 × f'c)<br>
+Plate thickness: t = L√(2fp/Fy)<br>
+fp = P / A1 (bearing pressure)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANCHOR BOLTS -->
+        <div class="sec">
+          <h3>⚓ ANCHOR BOLT DESIGN</h3>
+          <div class="grid2">
+            <div>
+              <h4>Anchor Bolt Types & Grades</h4>
+              <table>
+                <tr><th>Type</th><th>Standard</th><th>Fy</th><th>Fu</th></tr>
+                <tr><td>Headed Stud</td><td>IS 1367 Gr 4.6</td><td>240</td><td>400</td></tr>
+                <tr><td>Bent / J / L</td><td>IS 5624</td><td>250</td><td>410</td></tr>
+                <tr><td>A307</td><td>ASTM</td><td>248</td><td>414</td></tr>
+                <tr><td>F1554 Gr36</td><td>ASTM</td><td>248</td><td>400</td></tr>
+                <tr><td>F1554 Gr55</td><td>ASTM</td><td>380</td><td>520</td></tr>
+              </table>
+              <h4>Min Edge & Spacing — ACI 318</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min Value</th></tr>
+                <tr><td>Edge distance</td><td>6da (cast-in), 8da (post)</td></tr>
+                <tr><td>Spacing (s)</td><td>6da minimum</td></tr>
+                <tr><td>Embed depth (hef)</td><td>As per design</td></tr>
+                <tr><td>Concrete cover</td><td>50mm min</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Anchor Capacity — ACI 318 Appendix D</h4>
+              <div class="formula">Steel Tension: Nsa = Ase,N × futa<br>
+φ = 0.75 (ductile), 0.70 (brittle)</div>
+              <div class="formula">Concrete Breakout (Tension):<br>
+Ncbg = (ANc/ANco) × ψec × ψed × ψc × Nb<br>
+Nb = kc × √f'c × hef^1.5</div>
+              <div class="formula">Pullout Strength:<br>
+Npn = ψc,P × Np<br>
+Np = 8Abrg × f'c (headed bolt)</div>
+              <div class="formula">Shear Capacity:<br>
+Vsa = 0.6 Ase,V × futa<br>
+Vcbg = (AVc/AVco) × ψed × ψc × Vb</div>
+              <div class="formula">Combined T+V:<br>
+(Nu/φNn)^(5/3) + (Vu/φVn)^(5/3) ≤ 1.0</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== STRUCTURAL TAB ===== -->
+        <div id="structural" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🏗️ Structural Design — Beams, Columns, Slabs, Foundations</h2>
+
+        <style>
+          .sec2{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #2C7A4B;}
+          .sec2 h3{color:#1A5C38;margin-bottom:16px;font-size:1.3rem;}
+          .sec2 h4{color:#2C7A4B;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <!-- BEAMS -->
+        <div class="sec2">
+          <h3>📏 BEAM DESIGN</h3>
+          <div class="grid2">
+            <div>
+              <h4>Reinforcement Limits — ACI 318</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>As (min)</td><td>max(3√f'c/fy, 200/fy) × bw×d</td><td>—</td></tr>
+                <tr><td>As (max)</td><td>—</td><td>0.75 × As,balanced</td></tr>
+                <tr><td>ρ (min)</td><td>0.0033 (f'c=4ksi,fy=60ksi)</td><td>—</td></tr>
+                <tr><td>ρ (max)</td><td>—</td><td>0.75ρb</td></tr>
+                <tr><td>Stirrup spacing</td><td>—</td><td>d/2 or 600mm</td></tr>
+              </table>
+              <h4>Reinforcement Limits — IS 456</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>Ast (min)</td><td>0.85bd/fy</td><td>—</td></tr>
+                <tr><td>Ast (max)</td><td>—</td><td>0.04bD</td></tr>
+                <tr><td>Side face reinf.</td><td>0.1% bw×D (if D>750mm)</td><td>—</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Beam Design Formulas</h4>
+              <div class="formula"><span class="badge usa">ACI</span> Nominal Moment:<br>
+Mn = As × fy × (d – a/2)<br>
+a = As × fy / (0.85 × f'c × b)<br>
+φMn ≥ Mu, φ = 0.90</div>
+              <div class="formula"><span class="badge ind">IS 456</span> Moment Capacity:<br>
+Mu,lim = 0.36 × fck × xu × b × (d – 0.42xu)<br>
+xu/d = 0.48 (Fe415), 0.46 (Fe500)</div>
+              <div class="formula"><span class="badge both">Both</span> Deflection Check:<br>
+δ ≤ L/360 (live load)<br>
+δ ≤ L/240 (total load)</div>
+              <div class="formula">Shear — IS 456:<br>
+τv = Vu / (b×d), compare with τc<br>
+If τv > τc: design stirrups<br>
+Vus = 0.87fy × Asv × d / sv</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN -->
+        <div class="sec2">
+          <h3>🏛️ COLUMN DESIGN</h3>
+          <div class="grid2">
+            <div>
+              <h4>Reinforcement Limits — ACI 318</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>Longitudinal ρ</td><td>1.0% (0.01Ag)</td><td>8.0% (0.08Ag)</td></tr>
+                <tr><td>Min bars (tied)</td><td>4 (rectangular)</td><td>—</td></tr>
+                <tr><td>Min bars (spiral)</td><td>6</td><td>—</td></tr>
+                <tr><td>Min bar size</td><td>#5 (16mm)</td><td>—</td></tr>
+                <tr><td>Tie spacing</td><td>—</td><td>Min(16db, 48ds, b)</td></tr>
+              </table>
+              <h4>Reinforcement Limits — IS 456</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>Asc (min)</td><td>0.8% Ag</td><td>—</td></tr>
+                <tr><td>Asc (max)</td><td>—</td><td>6% Ag (6% lapped)</td></tr>
+                <tr><td>Min bars</td><td>4 (rect), 6 (circular)</td><td>—</td></tr>
+                <tr><td>Lateral tie dia</td><td>6mm or φ/4</td><td>—</td></tr>
+                <tr><td>Tie spacing</td><td>—</td><td>Min(LLD×16, 300mm)</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Column Design Formulas</h4>
+              <div class="formula"><span class="badge usa">ACI</span> Short Column (Tied):<br>
+φPn = φ × 0.80[0.85f'c(Ag–Ast) + fy×Ast]<br>
+φ = 0.65</div>
+              <div class="formula"><span class="badge usa">ACI</span> Short Column (Spiral):<br>
+φPn = φ × 0.85[0.85f'c(Ag–Ast) + fy×Ast]<br>
+φ = 0.75</div>
+              <div class="formula"><span class="badge ind">IS 456</span> Axial Load:<br>
+Pu = 0.4fck×Ac + 0.67fy×Asc<br>
+Ac = Ag – Asc</div>
+              <div class="formula">Slenderness — IS 456:<br>
+lex/D and ley/b ≤ 12 (short)<br>
+> 12 = long column — use additional moment<br>
+Madd = P × (lex²/2000D)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLAB -->
+        <div class="sec2">
+          <h3>🏢 SLAB DESIGN</h3>
+          <div class="grid2">
+            <div>
+              <h4>Slab Thickness & Reinforcement — ACI</h4>
+              <table>
+                <tr><th>Parameter</th><th>Min</th><th>Max</th></tr>
+                <tr><td>One-way slab t</td><td>L/20 (SS), L/28 (cont)</td><td>—</td></tr>
+                <tr><td>Two-way slab t</td><td>L/33 (flat slab)</td><td>—</td></tr>
+                <tr><td>As (min) temp</td><td>0.0018Ag (Gr60)</td><td>—</td></tr>
+                <tr><td>As (main)</td><td>As for beams</td><td>0.75ρb</td></tr>
+                <tr><td>Bar spacing</td><td>—</td><td>Min(3t, 450mm)</td></tr>
+                <tr><td>Cover</td><td>20mm (interior)</td><td>—</td></tr>
+              </table>
+              <h4>Slab — IS 456</h4>
+              <table>
+                <tr><th>Parameter</th><th>Limit</th></tr>
+                <tr><td>Min Ast</td><td>0.12% bD (Fe415)</td></tr>
+                <tr><td>Max spacing (main)</td><td>3d or 300mm</td></tr>
+                <tr><td>Max spacing (dist)</td><td>5d or 450mm</td></tr>
+                <tr><td>Cover</td><td>15mm (mild), 20mm (moderate)</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>Two-Way Slab — IS 456 Cl 24</h4>
+              <div class="formula">Moment Coefficients:<br>
+Mx = αx × w × lx²<br>
+My = αy × w × lx²<br>
+αx, αy from IS 456 Table 27<br>
+Depends on ly/lx ratio & support conditions</div>
+              <div class="formula">Punching Shear — ACI:<br>
+Vc = min of:<br>
+4√f'c × bo × d<br>
+(2 + 4/βc)√f'c × bo × d<br>
+(αs×d/bo + 2)√f'c × bo × d</div>
+              <div class="formula"><span class="badge ind">IS 456</span> Punching:<br>
+τv = Vu / (bo × D) ≤ τcp<br>
+τcp = ks × 0.25√fck<br>
+ks = 0.5 + βc (max 1.0)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOUNDATION -->
+        <div class="sec2">
+          <h3>⚓ FOUNDATION DESIGN</h3>
+          <div class="grid2">
+            <div>
+              <h4>Isolated Footing — ACI 318</h4>
+              <div class="formula">Bearing Pressure: q = P/A ± M×c/I<br>
+q ≤ qa (allowable)</div>
+              <div class="formula">Min Depth: d = √(Mu / (φ × 0.85 × f'c × b))</div>
+              <div class="formula">As = Mu / (φ × fy × (d – a/2))<br>
+Min As = 0.0018 × b × t (temp+shrink)</div>
+              <div class="formula">One-way shear: critical at 'd' from face<br>
+Vc = 2√f'c × b × d (ACI)</div>
+              <div class="formula">Punching shear: critical at 'd/2' from col face<br>
+bo = 4(c + d) for square column</div>
+              <h4>Pile Foundation</h4>
+              <div class="formula">Safe Load: Qs = Qf/FOS + Qp/FOS<br>
+Qf = friction (skin), Qp = end bearing<br>
+FOS = 2.5 (combined), 3.0 (individual)</div>
+            </div>
+            <div>
+              <h4>Isolated Footing — IS 456</h4>
+              <div class="formula">Critical Section for BM: at face of column<br>
+Mu = q × l × l²/2</div>
+              <div class="formula">Critical Section Shear:<br>
+One-way: d from face<br>
+Two-way: d/2 from face</div>
+              <div class="formula">Min Reinforcement: 0.12% (Fe415)<br>
+Min cover: 50mm (soil face)</div>
+              <h4>Bearing Capacity — IS 6403</h4>
+              <table>
+                <tr><th>Soil Type</th><th>Safe BC (kPa)</th></tr>
+                <tr><td>Soft clay</td><td>50–100</td></tr>
+                <tr><td>Stiff clay</td><td>100–200</td></tr>
+                <tr><td>Loose sand</td><td>100</td></tr>
+                <tr><td>Dense sand</td><td>200–400</td></tr>
+                <tr><td>Hard rock</td><td>3200–6400</td></tr>
+              </table>
+              <div class="formula">Terzaghi: qu = cNc + qNq + 0.5γBNγ<br>
+FOS = 3.0 → qa = qu/FOS</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== WIND LOAD TAB ===== -->
+        <div id="wind" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🌬️ Wind Load — IS 875 Part 3 & ASCE 7</h2>
+
+        <style>
+          .secw{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #7B4FA5;}
+          .secw h3{color:#4B2C7A;margin-bottom:16px;font-size:1.3rem;}
+          .secw h4{color:#7B4FA5;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <!-- IS 875 -->
+        <div class="secw">
+          <h3>🇮🇳 IS 875 Part 3:2015 — Indian Wind Code</h3>
+          <div class="grid2">
+            <div>
+              <h4>Step-by-Step Wind Load Calculation</h4>
+              <div class="formula" style="background:#F5F0FF">
+STEP 1: Basic Wind Speed (Vb)<br>
+From IS 875 Fig 1 (Wind Zone Map)<br>
+Zone II: 39 m/s, Zone III: 44 m/s<br>
+Zone IV: 47 m/s, Zone V: 50 m/s
+              </div>
+              <div class="formula" style="background:#F5F0FF">
+STEP 2: Design Wind Speed<br>
+Vz = Vb × k1 × k2 × k3 × k4<br>
+k1 = Risk coefficient (IS 875 Table 1)<br>
+k2 = Terrain/height factor (Table 2)<br>
+k3 = Topography factor<br>
+k4 = Importance factor
+              </div>
+              <div class="formula" style="background:#F5F0FF">
+STEP 3: Design Wind Pressure<br>
+pz = 0.6 × Vz² (N/m²)
+              </div>
+              <div class="formula" style="background:#F5F0FF">
+STEP 4: Wind Force on Structure<br>
+F = Cf × Ae × pd<br>
+Cf = Force coefficient (from IS 875 tables)<br>
+Ae = Effective area<br>
+pd = Design pressure
+              </div>
+            </div>
+            <div>
+              <h4>k1 — Risk Coefficient (IS 875 Table 1)</h4>
+              <table>
+                <tr><th>Mean Return Period</th><th>k1</th></tr>
+                <tr><td>5 years (temp structures)</td><td>0.82</td></tr>
+                <tr><td>25 years</td><td>0.94</td></tr>
+                <tr><td>50 years (general)</td><td>1.00</td></tr>
+                <tr><td>100 years (important)</td><td>1.05</td></tr>
+              </table>
+              <h4>k2 — Terrain Category</h4>
+              <table>
+                <tr><th>Category</th><th>Description</th></tr>
+                <tr><td>Cat 1</td><td>Open coast, flat treeless</td></tr>
+                <tr><td>Cat 2</td><td>Open with scattered obstructions</td></tr>
+                <tr><td>Cat 3</td><td>Urban, suburban with trees</td></tr>
+                <tr><td>Cat 4</td><td>City centres, tall buildings</td></tr>
+              </table>
+              <h4>Pressure Coefficients (Rectangular Bldg)</h4>
+              <table>
+                <tr><th>Surface</th><th>Cpe (typical)</th></tr>
+                <tr><td>Windward wall</td><td>+0.7</td></tr>
+                <tr><td>Leeward wall</td><td>–0.25 to –0.5</td></tr>
+                <tr><td>Side walls</td><td>–0.6</td></tr>
+                <tr><td>Roof (flat)</td><td>–0.8 to –0.4</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASCE 7 -->
+        <div class="secw">
+          <h3>🇺🇸 ASCE 7-22 — USA Wind Code</h3>
+          <div class="grid2">
+            <div>
+              <h4>Step-by-Step — Directional Procedure (Ch 27)</h4>
+              <div class="formula" style="background:#FFF0F5">
+STEP 1: Basic Wind Speed V<br>
+From ASCE 7 Fig 26.5-1A/B/C<br>
+Risk Category I: 110–160 mph<br>
+Risk Category II: 115–180 mph<br>
+Risk Category III/IV: 120–200 mph
+              </div>
+              <div class="formula" style="background:#FFF0F5">
+STEP 2: Velocity Pressure<br>
+qz = 0.00256 × Kz × Kzt × Ke × V²<br>
+Kz = Exposure coefficient (Table 26.10-1)<br>
+Kzt = Topographic factor<br>
+Ke = Ground elevation factor
+              </div>
+              <div class="formula" style="background:#FFF0F5">
+STEP 3: Design Pressure<br>
+p = q × G × Cp – qi × GCpi<br>
+G = 0.85 (rigid), Gust factor<br>
+Cp = External pressure coeff (Table 27.3-1)<br>
+GCpi = ±0.18 (enclosed), ±0.55 (open)
+              </div>
+              <div class="formula" style="background:#FFF0F5">
+STEP 4: Wind Force<br>
+F = p × A (per surface area)
+              </div>
+            </div>
+            <div>
+              <h4>Exposure Categories — ASCE 7</h4>
+              <table>
+                <tr><th>Category</th><th>Description</th></tr>
+                <tr><td>B</td><td>Urban, suburban, wooded — z0=0.3m</td></tr>
+                <tr><td>C</td><td>Open terrain — z0=0.02m</td></tr>
+                <tr><td>D</td><td>Flat, open coast, water ≥1.6km</td></tr>
+              </table>
+              <h4>Risk Categories — ASCE 7 Table 1.5-1</h4>
+              <table>
+                <tr><th>Category</th><th>Building Type</th></tr>
+                <tr><td>I</td><td>Low hazard — farm, storage</td></tr>
+                <tr><td>II</td><td>General buildings (most)</td></tr>
+                <tr><td>III</td><td>Substantial hazard — schools, hospitals</td></tr>
+                <tr><td>IV</td><td>Essential — emergency, power</td></tr>
+              </table>
+              <h4>Kz Values (Exposure C)</h4>
+              <table>
+                <tr><th>Height (ft)</th><th>Kz</th></tr>
+                <tr><td>0–15</td><td>0.85</td></tr>
+                <tr><td>20</td><td>0.90</td></tr>
+                <tr><td>30</td><td>0.98</td></tr>
+                <tr><td>50</td><td>1.09</td></tr>
+                <tr><td>100</td><td>1.22</td></tr>
+                <tr><td>200</td><td>1.40</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="warn">⚠️ ASCE 7-22 uses Strength-Level Wind Speeds (not 3-sec/fastest mile). No additional load factor for wind in LRFD — V already at strength level.</div>
+        </div>
+        </div>
+
+
+        <!-- ===== SEISMIC TAB ===== -->
+        <div id="seismic" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">📊 Seismic / Earthquake Load</h2>
+        <style>
+          .secs{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #C0392B;}
+          .secs h3{color:#922B21;margin-bottom:16px;font-size:1.3rem;}
+          .secs h4{color:#C0392B;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <div class="secs">
+          <h3>🇮🇳 IS 1893 Part 1 : 2016 — Step by Step</h3>
+          <div class="grid2">
+            <div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 1 — Seismic Zone Factor Z
+Zone II  → Z = 0.10 (Low)
+Zone III → Z = 0.16 (Moderate)
+Zone IV  → Z = 0.24 (Severe)
+Zone V   → Z = 0.36 (Very Severe)</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 2 — Importance Factor I
+I = 1.0  Ordinary buildings
+I = 1.2  Schools, hospitals (IS 1893 Table 8)
+I = 1.5  Critical infra, nuclear</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 3 — Response Reduction R
+OMRF         R = 3.0
+SMRF (RC)    R = 5.0
+Steel SMRF   R = 5.0
+Shear Wall   R = 4.0 – 5.0</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 4 — Time Period T
+RC Frame: T = 0.075 h^0.75
+Steel Frame: T = 0.085 h^0.75
+Shear Wall: T = 0.09h / √d
+h = height (m), d = base dimension (m)</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 5 — Spectral Acceleration Sa/g
+From IS 1893 Fig 2 (Rock/Soil type)
+Soil Type I (Rock):   Sa/g up to 2.5
+Soil Type II (Medium): Sa/g up to 2.5
+Soil Type III (Soft):  Sa/g up to 2.5</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 6 — Design Base Shear
+Vb = Ah × W
+Ah = (Z/2) × (I/R) × (Sa/g)
+W = Seismic weight of building</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 7 — Vertical Distribution
+Qi = Vb × Wi×hi² / Σ(Wj×hj²)
+Qi = Force at floor i</div>
+            </div>
+            <div>
+              <h4>Seismic Zones — India</h4>
+              <table>
+                <tr><th>Zone</th><th>Z</th><th>Description</th><th>Cities</th></tr>
+                <tr><td>II</td><td>0.10</td><td>Low</td><td>Hyderabad, Bengaluru</td></tr>
+                <tr><td>III</td><td>0.16</td><td>Moderate</td><td>Mumbai, Chennai, Delhi</td></tr>
+                <tr><td>IV</td><td>0.24</td><td>Severe</td><td>Delhi(parts), Jammu</td></tr>
+                <tr><td>V</td><td>0.36</td><td>Very Severe</td><td>NE India, J&K, Kutch</td></tr>
+              </table>
+              <h4>Damping Factor Multiplier</h4>
+              <table>
+                <tr><th>Damping %</th><th>Multiplier</th></tr>
+                <tr><td>2%</td><td>1.40</td></tr>
+                <tr><td>5%</td><td>1.00</td></tr>
+                <tr><td>10%</td><td>0.80</td></tr>
+                <tr><td>15%</td><td>0.70</td></tr>
+                <tr><td>20%</td><td>0.60</td></tr>
+              </table>
+              <div class="warn">⚠️ Check: Ah ≥ Z/(2×10) always<br>
+Min Ah = Z/20 regardless of T</div>
+              <div class="warn">⚠️ Drift limit: Δ/h ≤ 0.004 (IS 1893 Cl 7.11.1)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="secs">
+          <h3>🇺🇸 ASCE 7-22 / IBC 2021 — Seismic</h3>
+          <div class="grid2">
+            <div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 1 — Site Class (ASCE 7 Table 20.3-1)
+Site A: Hard Rock    Vs>1500 m/s
+Site B: Rock         Vs=760–1500
+Site C: Dense Soil   Vs=370–760
+Site D: Stiff Soil   Vs=180–370 (Default)
+Site E: Soft Clay    Vs<180
+Site F: Special soils → site-specific</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 2 — MCE Ground Motion
+SS = 0.2s spectral acceleration (from maps)
+S1 = 1.0s spectral acceleration (from maps)</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 3 — Design Spectral Values
+SMS = Fa × SS   (Fa from Table 11.4-1)
+SM1 = Fv × S1   (Fv from Table 11.4-2)
+SDS = 2/3 × SMS
+SD1 = 2/3 × SM1</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 4 — Seismic Design Category (SDC)
+From ASCE 7 Tables 11.6-1 & 11.6-2
+SDC A: Very low → no special req
+SDC B: Low
+SDC C: Moderate
+SDC D: High → Special systems req
+SDC E/F: Very High</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 5 — Response Spectrum
+0≤T≤T0: Sa = SDS(0.4+0.6T/T0)
+T0≤T≤Ts: Sa = SDS
+Ts≤T≤TL: Sa = SD1/T
+T>TL:     Sa = SD1×TL/T²</div>
+              <div class="formula" style="background:#FFF5F5">
+STEP 6 — Base Shear (ELF)
+V = Cs × W
+Cs = SDS / (R/Ie)
+Cs(max) = SD1 / (T × R/Ie)
+Cs(min) = 0.044 × SDS × Ie ≥ 0.01</div>
+            </div>
+            <div>
+              <h4>R Factors — ASCE 7 Table 12.2-1</h4>
+              <table>
+                <tr><th>System</th><th>R</th><th>Ω0</th><th>Cd</th></tr>
+                <tr><td>Special RC Shear Wall</td><td>6</td><td>2.5</td><td>5</td></tr>
+                <tr><td>Ordinary RC Frame</td><td>3</td><td>3</td><td>2.5</td></tr>
+                <tr><td>Special RC Frame</td><td>8</td><td>3</td><td>5.5</td></tr>
+                <tr><td>Special Steel MF</td><td>8</td><td>3</td><td>5.5</td></tr>
+                <tr><td>Ordinary Steel MF</td><td>3.5</td><td>3</td><td>3</td></tr>
+                <tr><td>Steel EBF</td><td>8</td><td>2</td><td>4</td></tr>
+                <tr><td>Steel SCBF</td><td>6</td><td>2</td><td>5</td></tr>
+              </table>
+              <h4>Ie — Importance Factor</h4>
+              <table>
+                <tr><th>Risk Category</th><th>Ie</th></tr>
+                <tr><td>I</td><td>1.00</td></tr>
+                <tr><td>II</td><td>1.00</td></tr>
+                <tr><td>III</td><td>1.25</td></tr>
+                <tr><td>IV</td><td>1.50</td></tr>
+              </table>
+              <div class="warn">⚠️ Story Drift limit Δ:<br>
+SDC B,C: 0.025hsx (Risk Cat I,II)<br>
+SDC D,E,F: 0.020hsx (Risk Cat I,II)<br>
+Risk Cat III: 0.015hsx</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== STEEL SECTIONS TAB ===== -->
+        <div id="steelsec" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🏗️ Structural Steel Sections</h2>
+        <style>
+          .secst{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #1A7A4A;}
+          .secst h3{color:#145C38;margin-bottom:16px;font-size:1.3rem;}
+          .secst h4{color:#1A7A4A;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <div class="secst">
+          <h3>🇮🇳 IS Sections — IS 808 / IS 2062</h3>
+          <div class="grid2">
+            <div>
+              <h4>Material Grades — IS 2062</h4>
+              <table>
+                <tr><th>Grade</th><th>Fy (MPa)</th><th>Fu (MPa)</th><th>Use</th></tr>
+                <tr><td>E250A</td><td>250</td><td>410</td><td>General</td></tr>
+                <tr><td>E250B</td><td>250</td><td>410</td><td>Impact tested</td></tr>
+                <tr><td>E300</td><td>300</td><td>440</td><td>Medium strength</td></tr>
+                <tr><td>E350</td><td>350</td><td>490</td><td>High strength</td></tr>
+                <tr><td>E410</td><td>410</td><td>540</td><td>Very high</td></tr>
+                <tr><td>E450</td><td>450</td><td>570</td><td>Special</td></tr>
+              </table>
+              <h4>ISMB — Medium Weight Beam</h4>
+              <table>
+                <tr><th>Section</th><th>D(mm)</th><th>bf(mm)</th><th>Iz(cm⁴)</th><th>Zz(cm³)</th><th>wt(kg/m)</th></tr>
+                <tr><td>ISMB 100</td><td>100</td><td>75</td><td>257</td><td>51.5</td><td>11.5</td></tr>
+                <tr><td>ISMB 150</td><td>150</td><td>80</td><td>726</td><td>96.9</td><td>14.9</td></tr>
+                <tr><td>ISMB 200</td><td>200</td><td>100</td><td>2235</td><td>223</td><td>25.4</td></tr>
+                <tr><td>ISMB 250</td><td>250</td><td>125</td><td>5131</td><td>411</td><td>37.3</td></tr>
+                <tr><td>ISMB 300</td><td>300</td><td>140</td><td>9238</td><td>616</td><td>46.1</td></tr>
+                <tr><td>ISMB 350</td><td>350</td><td>140</td><td>13630</td><td>779</td><td>52.4</td></tr>
+                <tr><td>ISMB 400</td><td>400</td><td>140</td><td>20011</td><td>1001</td><td>61.6</td></tr>
+                <tr><td>ISMB 450</td><td>450</td><td>150</td><td>30390</td><td>1351</td><td>72.4</td></tr>
+                <tr><td>ISMB 500</td><td>500</td><td>180</td><td>45218</td><td>1809</td><td>86.9</td></tr>
+                <tr><td>ISMB 600</td><td>600</td><td>210</td><td>91813</td><td>3060</td><td>122.6</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>ISMC — Channel Sections</h4>
+              <table>
+                <tr><th>Section</th><th>D(mm)</th><th>bf(mm)</th><th>Iz(cm⁴)</th><th>wt(kg/m)</th></tr>
+                <tr><td>ISMC 75</td><td>75</td><td>40</td><td>52.7</td><td>7.14</td></tr>
+                <tr><td>ISMC 100</td><td>100</td><td>50</td><td>187</td><td>9.56</td></tr>
+                <tr><td>ISMC 150</td><td>150</td><td>75</td><td>779</td><td>16.4</td></tr>
+                <tr><td>ISMC 200</td><td>200</td><td>75</td><td>1819</td><td>22.1</td></tr>
+                <tr><td>ISMC 250</td><td>250</td><td>82</td><td>3871</td><td>30.6</td></tr>
+                <tr><td>ISMC 300</td><td>300</td><td>90</td><td>6362</td><td>36.3</td></tr>
+                <tr><td>ISMC 400</td><td>400</td><td>100</td><td>15083</td><td>49.4</td></tr>
+              </table>
+              <h4>ISA — Equal Angles</h4>
+              <table>
+                <tr><th>Section</th><th>A×B×t</th><th>Iz(cm⁴)</th><th>wt(kg/m)</th></tr>
+                <tr><td>ISA 50×50×6</td><td>50×50×6</td><td>11.1</td><td>4.5</td></tr>
+                <tr><td>ISA 75×75×8</td><td>75×75×8</td><td>44.0</td><td>8.9</td></tr>
+                <tr><td>ISA 100×100×10</td><td>100×100×10</td><td>177</td><td>15.1</td></tr>
+                <tr><td>ISA 150×150×12</td><td>150×150×12</td><td>607</td><td>27.3</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="secst">
+          <h3>🇺🇸 AISC Sections — ASTM Standards</h3>
+          <div class="grid2">
+            <div>
+              <h4>Material Grades — ASTM</h4>
+              <table>
+                <tr><th>Grade</th><th>Fy (ksi/MPa)</th><th>Fu (ksi/MPa)</th><th>Shapes</th></tr>
+                <tr><td>A36</td><td>36/248</td><td>58/400</td><td>Plates, angles</td></tr>
+                <tr><td>A572 Gr50</td><td>50/345</td><td>65/448</td><td>W, C, L shapes</td></tr>
+                <tr><td>A992</td><td>50/345</td><td>65/448</td><td>W shapes only</td></tr>
+                <tr><td>A500 GrC</td><td>46/317</td><td>62/427</td><td>HSS round</td></tr>
+                <tr><td>A500 GrB</td><td>46/317</td><td>58/400</td><td>HSS rect/sq</td></tr>
+                <tr><td>A53 GrB</td><td>35/241</td><td>60/414</td><td>Pipe</td></tr>
+              </table>
+              <h4>W-Sections (Wide Flange)</h4>
+              <table>
+                <tr><th>Section</th><th>d(in)</th><th>bf(in)</th><th>Ix(in⁴)</th><th>Sx(in³)</th><th>wt(lb/ft)</th></tr>
+                <tr><td>W6×15</td><td>5.99</td><td>5.99</td><td>29.1</td><td>9.72</td><td>15</td></tr>
+                <tr><td>W8×31</td><td>8.00</td><td>7.995</td><td>110</td><td>27.5</td><td>31</td></tr>
+                <tr><td>W10×49</td><td>9.98</td><td>10.0</td><td>272</td><td>54.6</td><td>49</td></tr>
+                <tr><td>W12×53</td><td>11.7</td><td>9.995</td><td>425</td><td>70.6</td><td>53</td></tr>
+                <tr><td>W14×68</td><td>14.0</td><td>10.04</td><td>722</td><td>103</td><td>68</td></tr>
+                <tr><td>W16×77</td><td>16.5</td><td>10.3</td><td>1110</td><td>134</td><td>77</td></tr>
+                <tr><td>W18×97</td><td>18.6</td><td>11.1</td><td>1750</td><td>188</td><td>97</td></tr>
+                <tr><td>W21×111</td><td>21.5</td><td>12.3</td><td>2670</td><td>249</td><td>111</td></tr>
+                <tr><td>W24×131</td><td>24.5</td><td>12.9</td><td>4020</td><td>329</td><td>131</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>HSS Rectangular</h4>
+              <table>
+                <tr><th>Section</th><th>Ix(in⁴)</th><th>Sx(in³)</th><th>wt(lb/ft)</th></tr>
+                <tr><td>HSS4×4×1/4</td><td>8.22</td><td>4.11</td><td>12.2</td></tr>
+                <tr><td>HSS6×6×1/4</td><td>35.6</td><td>11.9</td><td>18.7</td></tr>
+                <tr><td>HSS8×8×3/8</td><td>116</td><td>29.0</td><td>35.2</td></tr>
+                <tr><td>HSS10×10×1/2</td><td>291</td><td>58.3</td><td>59.3</td></tr>
+              </table>
+              <h4>HSS Round (Pipe)</h4>
+              <table>
+                <tr><th>Section</th><th>OD(in)</th><th>Ix(in⁴)</th><th>wt(lb/ft)</th></tr>
+                <tr><td>Pipe 3 Std</td><td>3.500</td><td>3.02</td><td>7.58</td></tr>
+                <tr><td>Pipe 4 Std</td><td>4.500</td><td>7.23</td><td>10.8</td></tr>
+                <tr><td>Pipe 6 Std</td><td>6.625</td><td>28.1</td><td>18.97</td></tr>
+                <tr><td>Pipe 8 XS</td><td>8.625</td><td>72.5</td><td>43.4</td></tr>
+              </table>
+              <div class="warn">⚠️ A992 has Fy/Fu ≤ 0.85 requirement — prevents premature fracture in seismic zones</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== SERVICEABILITY TAB ===== -->
+        <div id="serviceability" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🔄 Deflection & Serviceability</h2>
+        <style>
+          .secsv{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #D35400;}
+          .secsv h3{color:#A04000;margin-bottom:16px;font-size:1.3rem;}
+          .secsv h4{color:#D35400;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <div class="secsv">
+          <h3>📐 Deflection Limits</h3>
+          <div class="grid2">
+            <div>
+              <h4>IS 456 — Deflection Limits (Cl 23.2)</h4>
+              <table>
+                <tr><th>Condition</th><th>Limit</th></tr>
+                <tr><td>Final deflection (all loads)</td><td>L/250</td></tr>
+                <tr><td>After construction (partitions)</td><td>L/350 or 20mm</td></tr>
+                <tr><td>Cantilever span/depth</td><td>7 (SS), 10 (cont)</td></tr>
+              </table>
+              <h4>Span/Depth Ratios — IS 456 Cl 23.2.1</h4>
+              <table>
+                <tr><th>Support Condition</th><th>Basic l/d</th></tr>
+                <tr><td>Simply supported</td><td>20</td></tr>
+                <tr><td>Continuous</td><td>26</td></tr>
+                <tr><td>Cantilever</td><td>7</td></tr>
+              </table>
+              <div class="formula">Modification for steel %:<br>
+Multiply by kt (tension reinf factor)<br>
+Multiply by kc (compression reinf factor)<br>
+Multiply by kf (flange factor)</div>
+              <h4>Long-Term Deflection Multipliers — IS 456</h4>
+              <table>
+                <tr><th>Time</th><th>Multiplier</th></tr>
+                <tr><td>1 month</td><td>1.4</td></tr>
+                <tr><td>3 months</td><td>1.6</td></tr>
+                <tr><td>6 months</td><td>1.8</td></tr>
+                <tr><td>12 months</td><td>2.0</td></tr>
+                <tr><td>5+ years</td><td>2.0</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>ACI 318 — Deflection Limits (Table 24.2.2)</h4>
+              <table>
+                <tr><th>Condition</th><th>Limit</th></tr>
+                <tr><td>Flat roofs (no brittle)</td><td>L/180</td></tr>
+                <tr><td>Floors (no brittle)</td><td>L/360</td></tr>
+                <tr><td>Roof/floor + brittle</td><td>L/480</td></tr>
+                <tr><td>Total + brittle</td><td>L/240</td></tr>
+              </table>
+              <h4>Min Thickness — ACI 318 Table 9.3.1.1</h4>
+              <table>
+                <tr><th>Support</th><th>One-way slab</th><th>Beam</th></tr>
+                <tr><td>Simply supp.</td><td>L/20</td><td>L/16</td></tr>
+                <tr><td>One end cont.</td><td>L/24</td><td>L/18.5</td></tr>
+                <tr><td>Both ends cont.</td><td>L/28</td><td>L/21</td></tr>
+                <tr><td>Cantilever</td><td>L/10</td><td>L/8</td></tr>
+              </table>
+              <h4>Crack Width Limits</h4>
+              <table>
+                <tr><th>Standard</th><th>Exposure</th><th>Max Crack</th></tr>
+                <tr><td>IS 456</td><td>Mild/Moderate</td><td>0.3mm</td></tr>
+                <tr><td>IS 456</td><td>Severe</td><td>0.2mm</td></tr>
+                <tr><td>ACI 318</td><td>Interior</td><td>0.4mm</td></tr>
+                <tr><td>ACI 318</td><td>Exterior</td><td>0.3mm</td></tr>
+                <tr><td>EN 1992</td><td>XC1</td><td>0.4mm</td></tr>
+                <tr><td>EN 1992</td><td>XC2-XC4</td><td>0.3mm</td></tr>
+              </table>
+              <div class="formula">Long-Term Multiplier λΔ (ACI):<br>
+λΔ = ξ / (1 + 50ρ')<br>
+ρ' = compression steel ratio<br>
+ξ = 2.0 (5yr), 1.4 (1yr), 1.2 (6mo), 1.0 (3mo)</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== CONNECTION DETAILS TAB ===== -->
+        <div id="conndetail" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🔗 Connection Details</h2>
+        <style>
+          .seccd{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #7D3C98;}
+          .seccd h3{color:#5B2C7A;margin-bottom:16px;font-size:1.3rem;}
+          .seccd h4{color:#7D3C98;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <div class="seccd">
+          <h3>🔲 Shear Tab / Simple Connections</h3>
+          <div class="grid2">
+            <div>
+              <div class="formula">AISC Design Steps:<br>
+1. Vu = factored shear from beam<br>
+2. Choose bolt size & grade<br>
+3. Bolt shear capacity: φRn = φFnvAb<br>
+4. Bearing on tab: φRn = φ2.4FutD<br>
+5. Tab shear yield: φRn = φ0.6Fy×Ag<br>
+6. Tab shear rupture: φRn = φ0.6Fu×Anv<br>
+7. Check block shear: φRn = φ(0.6FuAnv+UbsFuAnt)</div>
+              <h4>Shear Tab Limits — AISC</h4>
+              <table>
+                <tr><th>Parameter</th><th>Limit</th></tr>
+                <tr><td>Min plate t</td><td>3/8 in (9.5mm)</td></tr>
+                <tr><td>Max plate t</td><td>db/2 + 1/16 in</td></tr>
+                <tr><td>Min bolt rows</td><td>2</td></tr>
+                <tr><td>Max bolt rows</td><td>12</td></tr>
+                <tr><td>Bolt spacing</td><td>3db min (typ 3")</td></tr>
+                <tr><td>Edge distance</td><td>1.5db min (typ 1.5")</td></tr>
+              </table>
+            </div>
+            <div>
+              <h4>IS 800:2007 Simple Connection</h4>
+              <div class="formula">Clip angle / shear tab:<br>
+Vd = factored shear<br>
+Check bolt shear: Vdsb = Vnsb/γmb<br>
+Check bearing: Vdpb = Vnpb/γmb<br>
+Check angle/tab: shear yielding & rupture<br>
+End distance e1 ≥ 1.7d0<br>
+Min bolts = 2 (AISC) / 2 (IS)</div>
+              <h4>Double Angle Connection</h4>
+              <div class="formula">Two angles bolted to web:<br>
+Each angle carries Vu/2<br>
+AISC Table 10-1 for standard configs<br>
+Outstanding leg: 4" standard</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seccd">
+          <h3>🔩 Moment Connections</h3>
+          <div class="grid2">
+            <div>
+              <h4>End Plate Moment Connection</h4>
+              <div class="formula">Flange Force: Tf = Mu / (d – tf)<br>
+Bolt tension: T/bolt = Tf / n_bolts<br>
+Check: T/bolt ≤ φFt×Ab<br>
+Plate thickness: tp = √(4Tf×g / φFy×bp×n)<br>
+Weld to beam: Full penetration groove</div>
+              <h4>Flange Plate Moment Connection</h4>
+              <div class="formula">Top/Bottom flange plates carry moment:<br>
+Plate force: F = Mu / d_beam<br>
+Plate area: Ap = F / (φFy)<br>
+Width: Same or wider than bf<br>
+Thickness: Ap / width<br>
+Bolts to column flange: F / φFnv×Ab</div>
+            </div>
+            <div>
+              <h4>Prequalified MCs — AISC 358</h4>
+              <table>
+                <tr><th>Type</th><th>Code</th><th>Use</th></tr>
+                <tr><td>WUF-W</td><td>Welded Unreinf Flange</td><td>SMF,IMF</td></tr>
+                <tr><td>BFP</td><td>Bolted Flange Plate</td><td>SMF,IMF</td></tr>
+                <tr><td>BUEEP</td><td>Bolted Unstiff End Plate</td><td>OMF</td></tr>
+                <tr><td>4E-EP</td><td>4-bolt End Plate</td><td>SMF,IMF</td></tr>
+                <tr><td>8ES-EP</td><td>8-bolt End Plate</td><td>SMF,IMF</td></tr>
+                <tr><td>DST</td><td>Double Split Tee</td><td>IMF,OMF</td></tr>
+              </table>
+              <div class="warn">⚠️ For SMF: Protected zone — no attachments within 'd' from column face</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="seccd">
+          <h3>🔗 Splice Connections & Gusset Plates</h3>
+          <div class="grid2">
+            <div>
+              <h4>Beam Splice</h4>
+              <div class="formula">Web splice: takes shear + moment portion<br>
+Flange splice: takes flange force<br>
+Flange force: Ff = Mu/d × (Af/Ag)<br>
+Web moment: Mw = Mu × (Aw/Ag) × (d/2)<br>
+Splice plates: t ≥ 3/8", min 2 plates<br>
+Bolts each side: n = F / φRn per bolt</div>
+              <h4>Column Splice (AISC D2)</h4>
+              <div class="formula">Min splice strength: 50% col capacity<br>
+Butt plate or direct-weld to splice plates<br>
+Location: 4ft above floor level (pref)<br>
+For seismic: splice in middle 1/3 of column</div>
+            </div>
+            <div>
+              <h4>Gusset Plate — Bracing Connection</h4>
+              <div class="formula">Whitmore Width: lw = l×tan(30°) × 2 + w<br>
+where l = length of connection, w = bolt group width<br>
+Gusset axial: Pu = Whitmore × t × Fy<br>
+Min t gusset: P / (0.6Fy × lw)<br>
+Buckling length: 2/3 × L (Thornton method)</div>
+              <div class="formula">Seismic Gusset (AISC 341):<br>
+Linear clearance method: 2t offset from beam/col<br>
+Balanced Design Procedure (BDP)<br>
+Uniform Force Method (UFM) for forces</div>
+              <h4>Block Shear — All Connections</h4>
+              <div class="formula">φRn = φ[0.6Fu×Anv + Ubs×Fu×Ant]<br>
+≤ φ[0.6Fy×Agv + Ubs×Fu×Ant]<br>
+Ubs = 1.0 (uniform tension)<br>
+Ubs = 0.5 (non-uniform)<br>
+φ = 0.75</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== BASE PLATE TAB ===== -->
+        <div id="baseplate" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🏢 Column Base Plate Design</h2>
+        <style>
+          .secbp{background:white;padding:24px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #1A6BA0;}
+          .secbp h3{color:#0D4F80;margin-bottom:16px;font-size:1.3rem;}
+          .secbp h4{color:#1A6BA0;margin:14px 0 8px;font-size:1rem;}
+        </style>
+
+        <div class="secbp">
+          <h3>📐 Axial Load Base Plate — AISC Design Guide 1</h3>
+          <div class="grid2">
+            <div>
+              <div class="formula">
+STEP 1 — Required Bearing Area<br>
+A1_req = Pu / (φc × 0.85 × f'c)<br>
+φc = 0.60 (bearing), f'c = concrete strength</div>
+              <div class="formula">
+STEP 2 — Plate Dimensions<br>
+Try: B×N ≥ A1_req<br>
+N_min = d + 2(3") = d + 6 in (pref)<br>
+B_min = bf + 2(3") = bf + 6 in (pref)<br>
+Round up to nearest inch</div>
+              <div class="formula">
+STEP 3 — Actual Bearing Pressure<br>
+fp = Pu / (B×N) ≤ φ×0.85f'c×√(A2/A1)<br>
+A2 = frustum area at bearing depth<br>
+A2/A1 ≤ 4.0 (max multiplier)</div>
+              <div class="formula">
+STEP 4 — Plate Thickness<br>
+m = (N – 0.95d) / 2<br>
+n = (B – 0.80bf) / 2<br>
+n' = √(d×bf) / 4 (lambda factor)<br>
+l = max(m, n, λn')<br>
+t_req = l × √(2fp / (φFy))<br>
+φ = 0.90 for bending</div>
+            </div>
+            <div>
+              <h4>Common Base Plate Thicknesses</h4>
+              <table>
+                <tr><th>Column Load</th><th>Typical t</th><th>Grade</th></tr>
+                <tr><td>&lt;200 kips</td><td>3/4" – 1"</td><td>A36</td></tr>
+                <tr><td>200–500 kips</td><td>1" – 1.5"</td><td>A36/A572</td></tr>
+                <tr><td>500–1000 kips</td><td>1.5" – 2"</td><td>A572 Gr50</td></tr>
+                <tr><td>&gt;1000 kips</td><td>2" – 3"</td><td>A572 Gr50</td></tr>
+              </table>
+              <h4>Grout Pad Specification</h4>
+              <table>
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>Min thickness</td><td>1" (25mm)</td></tr>
+                <tr><td>Max thickness</td><td>4" (100mm)</td></tr>
+                <tr><td>Typical</td><td>1.5" – 2"</td></tr>
+                <tr><td>Grout strength</td><td>≥ concrete f'c</td></tr>
+                <tr><td>Type</td><td>Non-shrink grout (ASTM C1107)</td></tr>
+              </table>
+              <div class="warn">⚠️ Grout must be non-shrink. Dry pack or pumpable. Set column plumb before grout cures.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="secbp">
+          <h3>📐 Moment Base Plate (P+M)</h3>
+          <div class="grid2">
+            <div>
+              <div class="formula">
+CASE 1 — Small Eccentricity (e ≤ N/6)<br>
+e = Mu/Pu<br>
+Full compression — no tension in bolts<br>
+fp,max = Pu/A + Mu×c/I<br>
+fp,min = Pu/A – Mu×c/I ≥ 0<br>
+Design plate for fp,max</div>
+              <div class="formula">
+CASE 2 — Large Eccentricity (e > N/6)<br>
+Anchor bolts in tension<br>
+Take moments about compression resultant:<br>
+T = Mu_new / d_bolts<br>
+C = Pu + T<br>
+fp = 2C / (3×B×Y)<br>
+Y = N/2 – e' (bearing length)<br>
+e' = N/2 – d_bolts/2</div>
+              <div class="formula">
+Plate thickness for Moment:<br>
+Cantilever length for tension side: l = d_bolt to plate edge<br>
+t = √(2Mu_plate / (φFy))<br>
+Mu_plate = T_bolt × l</div>
+            </div>
+            <div>
+              <h4>Anchor Bolt Patterns</h4>
+              <table>
+                <tr><th>Config</th><th>Bolts</th><th>Use</th></tr>
+                <tr><td>2-bolt</td><td>2 bolts on CL</td><td>Light axial only</td></tr>
+                <tr><td>4-bolt</td><td>Rect pattern</td><td>General — most common</td></tr>
+                <tr><td>6-bolt</td><td>2 rows × 3</td><td>Heavy moment</td></tr>
+                <tr><td>8-bolt</td><td>2 rows × 4</td><td>Very heavy columns</td></tr>
+              </table>
+              <h4>Anchor Bolt Projection</h4>
+              <table>
+                <tr><th>Bolt Dia</th><th>Min Proj above grout</th></tr>
+                <tr><td>3/4" (M20)</td><td>3" (75mm)</td></tr>
+                <tr><td>1" (M24)</td><td>3.5" (90mm)</td></tr>
+                <tr><td>1.25" (M30)</td><td>4" (100mm)</td></tr>
+                <tr><td>1.5" (M36)</td><td>5" (125mm)</td></tr>
+              </table>
+              <div class="warn">⚠️ IS 800 Base Plate: Use IS 2062 E250/E350 plate. Check bearing: fb ≤ 185 MPa on concrete. Provide min 2 bolts always.</div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ===== CALCULATORS TAB ===== -->
+        <div id="calculators" class="tab-content">
+        <h2 style="color:#1F2937;margin-bottom:24px;font-size:2rem;">🔢 Quick Calculation Tools</h2>
+
+        <style>
+          .calc-box{background:white;padding:28px;border-radius:14px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #1A8040;}
+          .calc-box h3{color:#145C30;margin-bottom:20px;font-size:1.3rem;}
+          .calc-input{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px;}
+          .calc-input label{display:block;font-size:0.8rem;font-weight:700;color:#6B7280;margin-bottom:6px;text-transform:uppercase;}
+          .calc-input input,.calc-input select{width:100%;padding:10px 12px;border:2px solid #E5E7EB;border-radius:8px;font-size:1rem;}
+          .calc-input input:focus,.calc-input select:focus{outline:none;border-color:#4A6FA5;}
+          .calc-btn{background:linear-gradient(135deg,#1A8040,#2ECC71);color:white;border:none;padding:12px 28px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px;}
+          .calc-btn:hover{opacity:0.9;transform:translateY(-1px);}
+          .calc-result{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:2px solid #1A8040;border-radius:10px;padding:16px;margin-top:14px;display:none;}
+          .calc-result.show{display:block;animation:slideIn 0.3s ease;}
+          .res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:10px;}
+          .res-item{background:white;padding:12px;border-radius:8px;text-align:center;border:1px solid #C8E6C9;}
+          .res-item .val{font-size:1.4rem;font-weight:700;color:#1A8040;font-family:monospace;}
+          .res-item .lbl{font-size:0.78rem;color:#6B7280;margin-top:4px;}
+        </style>
+
+        <!-- BEAM CALCULATOR -->
+        <div class="calc-box">
+          <h3>📏 Beam Calculator — Reactions, Shear & Moment</h3>
+          <div class="calc-input">
+            <div>
+              <label>Beam Type</label>
+              <select id="bc-type" onchange="updateBeamInputs()">
+                <option value="ss-point">Simply Supported — Point Load</option>
+                <option value="ss-udl">Simply Supported — UDL</option>
+                <option value="cant-point">Cantilever — Point Load (End)</option>
+                <option value="cant-udl">Cantilever — UDL</option>
+                <option value="fixed-point">Fixed Both Ends — Point Load</option>
+              </select>
+            </div>
+            <div>
+              <label>Span L (m)</label>
+              <input type="number" id="bc-L" placeholder="e.g. 6" step="any">
+            </div>
+            <div id="bc-load-div">
+              <label id="bc-load-lbl">Load P (kN)</label>
+              <input type="number" id="bc-P" placeholder="e.g. 50" step="any">
+            </div>
+            <div id="bc-a-div">
+              <label>Distance a (m)</label>
+              <input type="number" id="bc-a" placeholder="from left" step="any">
+            </div>
+          </div>
+          <button class="calc-btn" onclick="calcBeam()">Calculate</button>
+          <div class="calc-result" id="bc-result">
+            <strong>Results:</strong>
+            <div class="res-grid" id="bc-res-grid"></div>
+            <div style="margin-top:14px;background:#F0F4FF;padding:12px;border-radius:8px;font-family:monospace;font-size:0.88rem;" id="bc-steps"></div>
+          </div>
+        </div>
+
+        <!-- COLUMN CAPACITY -->
+        <div class="calc-box">
+          <h3>🏛️ RC Column Capacity Checker</h3>
+          <div class="calc-input">
+            <div>
+              <label>Code</label>
+              <select id="col-code">
+                <option value="is">IS 456</option>
+                <option value="aci">ACI 318</option>
+              </select>
+            </div>
+            <div>
+              <label>Width b (mm)</label>
+              <input type="number" id="col-b" placeholder="e.g. 400" step="any">
+            </div>
+            <div>
+              <label>Depth D (mm)</label>
+              <input type="number" id="col-D" placeholder="e.g. 400" step="any">
+            </div>
+            <div>
+              <label>fck / f'c (MPa)</label>
+              <input type="number" id="col-fck" placeholder="e.g. 25" step="any">
+            </div>
+            <div>
+              <label>fy (MPa)</label>
+              <input type="number" id="col-fy" placeholder="e.g. 415" step="any">
+            </div>
+            <div>
+              <label>No. of bars</label>
+              <input type="number" id="col-nbars" placeholder="e.g. 8" step="any">
+            </div>
+            <div>
+              <label>Bar dia (mm)</label>
+              <input type="number" id="col-bardia" placeholder="e.g. 20" step="any">
+            </div>
+          </div>
+          <button class="calc-btn" onclick="calcColumn()">Calculate</button>
+          <div class="calc-result" id="col-result">
+            <strong>Results:</strong>
+            <div class="res-grid" id="col-res-grid"></div>
+            <div style="margin-top:14px;background:#F0F4FF;padding:12px;border-radius:8px;font-family:monospace;font-size:0.88rem;" id="col-steps"></div>
+          </div>
+        </div>
+
+        <!-- FOOTING CALCULATOR -->
+        <div class="calc-box">
+          <h3>⚓ Isolated Footing Size Calculator</h3>
+          <div class="calc-input">
+            <div>
+              <label>Column Load P (kN)</label>
+              <input type="number" id="ft-P" placeholder="e.g. 800" step="any">
+            </div>
+            <div>
+              <label>Safe BC q (kPa)</label>
+              <input type="number" id="ft-q" placeholder="e.g. 150" step="any">
+            </div>
+            <div>
+              <label>Column Size (mm)</label>
+              <input type="number" id="ft-col" placeholder="e.g. 400" step="any">
+            </div>
+            <div>
+              <label>fck (MPa)</label>
+              <input type="number" id="ft-fck" placeholder="e.g. 25" step="any">
+            </div>
+            <div>
+              <label>fy (MPa)</label>
+              <input type="number" id="ft-fy" placeholder="e.g. 415" step="any">
+            </div>
+          </div>
+          <button class="calc-btn" onclick="calcFooting()">Calculate</button>
+          <div class="calc-result" id="ft-result">
+            <strong>Results:</strong>
+            <div class="res-grid" id="ft-res-grid"></div>
+            <div style="margin-top:14px;background:#F0F4FF;padding:12px;border-radius:8px;font-family:monospace;font-size:0.88rem;" id="ft-steps"></div>
+          </div>
+        </div>
+
+        <!-- REBAR CALCULATOR -->
+        <div class="calc-box">
+          <h3>🔢 Rebar Area Calculator</h3>
+          <div class="calc-input">
+            <div>
+              <label>Number of Bars</label>
+              <input type="number" id="rb-n" placeholder="e.g. 6" step="any">
+            </div>
+            <div>
+              <label>Bar Diameter (mm)</label>
+              <select id="rb-dia">
+                <option value="8">8mm (T8)</option>
+                <option value="10">10mm (T10)</option>
+                <option value="12">12mm (T12)</option>
+                <option value="16" selected>16mm (T16)</option>
+                <option value="20">20mm (T20)</option>
+                <option value="25">25mm (T25)</option>
+                <option value="28">28mm (#9)</option>
+                <option value="32">32mm (T32/~#10)</option>
+                <option value="36">36mm (#11)</option>
+                <option value="40">40mm (T40)</option>
+              </select>
+            </div>
+            <div>
+              <label>AISC Bar No (optional)</label>
+              <select id="rb-us">
+                <option value="">— or use above —</option>
+                <option value="9.5">#3 (9.5mm)</option>
+                <option value="12.7">#4 (12.7mm)</option>
+                <option value="15.9">#5 (15.9mm)</option>
+                <option value="19.1">#6 (19.1mm)</option>
+                <option value="22.2">#7 (22.2mm)</option>
+                <option value="25.4">#8 (25.4mm)</option>
+                <option value="28.7">#9 (28.7mm)</option>
+                <option value="32.3">#10 (32.3mm)</option>
+                <option value="35.8">#11 (35.8mm)</option>
+              </select>
+            </div>
+          </div>
+          <button class="calc-btn" onclick="calcRebar()">Calculate</button>
+          <div class="calc-result" id="rb-result">
+            <strong>Results:</strong>
+            <div class="res-grid" id="rb-res-grid"></div>
+          </div>
+        </div>
+
+        <script>
+          function updateBeamInputs(){
+            var t=document.getElementById('bc-type').value;
+            var aDiv=document.getElementById('bc-a-div');
+            var lbl=document.getElementById('bc-load-lbl');
+            aDiv.style.display=(t==='ss-point')?'block':'none';
+            lbl.textContent=(t==='ss-udl'||t==='cant-udl')?'UDL w (kN/m)':'Load P (kN)';
+          }
+          updateBeamInputs();
+
+          function resBox(val,lbl){
+            return '<div class="res-item"><div class="val">'+val+'</div><div class="lbl">'+lbl+'</div></div>';
+          }
+
+          function calcBeam(){
+            var type=document.getElementById('bc-type').value;
+            var L=parseFloat(document.getElementById('bc-L').value);
+            var P=parseFloat(document.getElementById('bc-P').value);
+            var a=parseFloat(document.getElementById('bc-a').value)||L/2;
+            if(!L||!P){alert('Enter Span and Load');return;}
+            var R1,R2,Vmax,Mmax,dmax,steps='';
+            var EI='EI';
+            if(type==='ss-point'){
+              var b=L-a;
+              R1=P*b/L; R2=P*a/L; Vmax=Math.max(R1,R2);
+              Mmax=R1*a;
+              dmax='Pa²b² / 3EIL (at load)';
+              steps='R1=P×b/L='+P+'×'+b.toFixed(2)+'/'+L+'='+R1.toFixed(2)+' kN
+R2=P×a/L='+R2.toFixed(2)+' kN
+Mmax=R1×a='+Mmax.toFixed(2)+' kN·m';
+            } else if(type==='ss-udl'){
+              R1=R2=P*L/2; Vmax=R1; Mmax=P*L*L/8;
+              dmax='5wL⁴/384EI (midspan)';
+              steps='Total load=w×L='+P+'×'+L+'='+(P*L).toFixed(2)+' kN
+R1=R2='+(P*L/2).toFixed(2)+' kN
+Mmax=wL²/8='+Mmax.toFixed(2)+' kN·m';
+            } else if(type==='cant-point'){
+              R1=P; R2=0; Vmax=P; Mmax=P*L;
+              dmax='PL³/3EI (free end)';
+              steps='Reaction at fixed end=P='+P+' kN
+Fixed moment=P×L='+Mmax.toFixed(2)+' kN·m';
+            } else if(type==='cant-udl'){
+              R1=P*L; R2=0; Vmax=P*L; Mmax=P*L*L/2;
+              dmax='wL⁴/8EI (free end)';
+              steps='Total load=w×L='+(P*L).toFixed(2)+' kN
+Mmax=wL²/2='+Mmax.toFixed(2)+' kN·m';
+            } else {
+              R1=R2=P/2; Vmax=P/2; Mmax=P*L/8;
+              dmax='PL³/192EI (midspan)';
+              steps='Fixed-Fixed:
+R1=R2=P/2='+R1.toFixed(2)+' kN
+Mmax(mid)=PL/8='+Mmax.toFixed(2)+' kN·m
+Mend=PL/8='+Mmax.toFixed(2)+' kN·m';
+            }
+            var g=document.getElementById('bc-res-grid');
+            g.innerHTML=resBox(R1.toFixed(2)+'<br><small>kN</small>','Reaction R1')+
+                         resBox(R2.toFixed(2)+'<br><small>kN</small>','Reaction R2')+
+                         resBox(Vmax.toFixed(2)+'<br><small>kN</small>','Max Shear')+
+                         resBox(Mmax.toFixed(2)+'<br><small>kN·m</small>','Max Moment')+
+                         resBox(dmax,'Max Deflection');
+            document.getElementById('bc-steps').textContent=steps;
+            var r=document.getElementById('bc-result');
+            r.classList.add('show'); r.style.display='block';
+          }
+
+          function calcColumn(){
+            var code=document.getElementById('col-code').value;
+            var b=parseFloat(document.getElementById('col-b').value);
+            var D=parseFloat(document.getElementById('col-D').value);
+            var fck=parseFloat(document.getElementById('col-fck').value);
+            var fy=parseFloat(document.getElementById('col-fy').value);
+            var n=parseFloat(document.getElementById('col-nbars').value);
+            var dia=parseFloat(document.getElementById('col-bardia').value);
+            if(!b||!D||!fck||!fy||!n||!dia){alert('Fill all fields');return;}
+            var Ag=b*D;
+            var Asc=n*Math.PI*dia*dia/4;
+            var rho=Asc/Ag*100;
+            var Pu,steps='';
+            if(code==='is'){
+              var Ac=Ag-Asc;
+              Pu=(0.4*fck*Ac+0.67*fy*Asc)/1000;
+              steps='IS 456: Pu=0.4×fck×Ac+0.67×fy×Asc
+Ag='+Ag+' mm²
+Asc='+Asc.toFixed(0)+' mm² (ρ='+rho.toFixed(2)+'%)
+Pu='+Pu.toFixed(1)+' kN';
+            } else {
+              Pu=0.80*0.65*(0.85*fck*(Ag-Asc)+fy*Asc)/1000;
+              steps='ACI 318 Tied Column:
+φPn=φ×0.80[0.85f'c(Ag-Ast)+fy×Ast]
+φ=0.65
+Pu='+Pu.toFixed(1)+' kN';
+            }
+            var ok=(rho>=0.8&&rho<=6)?'✅ OK':'⚠️ Check';
+            document.getElementById('col-res-grid').innerHTML=
+              resBox(Ag.toFixed(0),'Ag (mm²)')+
+              resBox(Asc.toFixed(0),'Asc (mm²)')+
+              resBox(rho.toFixed(2)+'%','Steel Ratio '+ok)+
+              resBox(Pu.toFixed(1)+' kN','Capacity Pu');
+            document.getElementById('col-steps').textContent=steps;
+            var r=document.getElementById('col-result');
+            r.classList.add('show'); r.style.display='block';
+          }
+
+          function calcFooting(){
+            var P=parseFloat(document.getElementById('ft-P').value);
+            var q=parseFloat(document.getElementById('ft-q').value);
+            var col=parseFloat(document.getElementById('ft-col').value);
+            var fck=parseFloat(document.getElementById('ft-fck').value);
+            var fy=parseFloat(document.getElementById('ft-fy').value);
+            if(!P||!q||!col||!fck||!fy){alert('Fill all fields');return;}
+            var Wself=0.1*P;
+            var Ptotal=P+Wself;
+            var A=Ptotal/q;
+            var B=Math.sqrt(A);
+            B=Math.ceil(B*10)/10;
+            var qnet=P/(B*B);
+            var d_shear=Math.sqrt(P*1000/(1.06*Math.sqrt(fck)*4*(col/1000+0)));
+            var lx=(B-col/1000)/2;
+            var Mu=qnet*B*lx*lx/2*1000;
+            var Ast=Mu*1e6/(0.87*fy*0.9*(d_shear*1000));
+            var Ast_min=0.0012*B*1000*d_shear*1000;
+            Ast=Math.max(Ast,Ast_min);
+            document.getElementById('ft-res-grid').innerHTML=
+              resBox(B.toFixed(2)+'m × '+B.toFixed(2)+'m','Footing Size')+
+              resBox((B*B).toFixed(2)+' m²','Area')+
+              resBox(qnet.toFixed(1)+' kPa','Net Pressure')+
+              resBox((d_shear*1000).toFixed(0)+' mm','Eff. Depth d')+
+              resBox(Ast.toFixed(0)+' mm²','Ast Required')+
+              resBox(Ast_min.toFixed(0)+' mm²','Ast Min');
+            document.getElementById('ft-steps').textContent=
+              'Self wt(10%)='+Wself+' kN
+Total P='+Ptotal+' kN
+Area req='+A.toFixed(2)+' m²
+Provide B='+B.toFixed(2)+'m
+Mu='+Mu.toFixed(1)+' kN·m';
+            var r=document.getElementById('ft-result');
+            r.classList.add('show'); r.style.display='block';
+          }
+
+          function calcRebar(){
+            var n=parseFloat(document.getElementById('rb-n').value);
+            var us=document.getElementById('rb-us').value;
+            var dia=us?parseFloat(us):parseFloat(document.getElementById('rb-dia').value);
+            if(!n||!dia){alert('Enter number of bars');return;}
+            var As=n*Math.PI*dia*dia/4;
+            var As_in2=As/645.16;
+            var wt=n*(Math.PI*dia*dia/4)*7850/1e6;
+            document.getElementById('rb-res-grid').innerHTML=
+              resBox(As.toFixed(0)+' mm²','Total As')+
+              resBox(As_in2.toFixed(3)+' in²','Total As (US)')+
+              resBox(dia+' mm','Bar Dia')+
+              resBox((Math.PI*dia*dia/4).toFixed(1)+' mm²','Area/bar')+
+              resBox(wt.toFixed(2)+' kg/m','Weight/m');
+            var r=document.getElementById('rb-result');
+            r.classList.add('show'); r.style.display='block';
+          }
+        </script>
+        </div>
+
+</body>
+</html>
